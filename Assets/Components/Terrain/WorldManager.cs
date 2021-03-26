@@ -15,6 +15,10 @@ namespace Antymology.Terrain
         /// The prefab containing the ant.
         /// </summary>
         public GameObject antPrefab;
+        public List<AntManager> ants = new List<AntManager>();
+
+        public GameObject queenPrefab;
+        public QueenManager queen;
 
         /// <summary>
         /// The material used for eech block.
@@ -67,6 +71,7 @@ namespace Antymology.Terrain
                 ConfigurationManager.Instance.World_Diameter,
                 ConfigurationManager.Instance.World_Height,
                 ConfigurationManager.Instance.World_Diameter];
+
         }
 
         /// <summary>
@@ -84,11 +89,94 @@ namespace Antymology.Terrain
         }
 
         /// <summary>
+        /// Update and agenets
+        /// </summary>
+        private void Update() {
+
+            killDepletedAnts();
+        }
+
+        /// <summary>
         /// TO BE IMPLEMENTED BY YOU
         /// </summary>
         private void GenerateAnts()
         {
-            throw new NotImplementedException();
+
+            // set location
+            int spawnX;
+            int spawnZ;
+
+            int spawnY;
+
+            for (int i = 0; i <= 5; i++)
+            {
+
+                GameObject ant;
+
+                if (i == 0)
+                {
+                    ant = GameObject.Instantiate(queenPrefab);
+                    queen = ant.GetComponent<QueenManager>();
+                }
+                else {
+                    ant = GameObject.Instantiate(antPrefab);
+                    AntManager antScript = ant.GetComponent<AntManager>();
+                    antScript.Initialize(this);
+                    ants.Add(antScript);
+
+                }
+
+                spawnX = (int) UnityEngine.Random.Range(1, 16*4);
+                spawnZ = (int) UnityEngine.Random.Range(1, 16*4);
+
+                spawnY = 4 * 8;
+
+                for (int y = 0; y <= 4 * 8; y++) {
+
+                    if (GetBlock(spawnX, y, spawnZ) is AirBlock)
+                    {
+                        spawnY = y;
+                        break;
+                    }
+                }
+
+                ant.transform.position = new Vector3(spawnX, spawnY, spawnZ);
+                
+            }
+
+        }
+
+        private void killDepletedAnts()
+        {
+
+            foreach (AntManager ant in ants) {
+
+                if (ant != null)
+                {
+                    if (ant.health <= 0) Destroy(ant.gameObject);
+                }
+            }
+
+            /*
+            foreach (AntManager ant in ants)
+            {
+                if(ant == null) ants.Remove(ant);
+            }
+            */
+
+            for (int i = 0; i < ants.Count; i++) {
+
+                if (ants[i] == null)
+                {
+                    ants.RemoveAt(i);
+                    i--;
+                }
+            }
+
+            if (queen != null)
+            {
+                if (queen.health <= 0) Destroy(queen.gameObject);
+            }
         }
 
         #endregion
@@ -435,5 +523,6 @@ namespace Antymology.Terrain
         #endregion
 
         #endregion
+
     }
 }
