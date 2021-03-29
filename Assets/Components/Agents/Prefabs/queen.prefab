@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 8173149984551810084}
   - component: {fileID: 2472570688363874525}
   - component: {fileID: 567371970292221959}
-  - component: {fileID: -3167260562996164502}
   - component: {fileID: 4979709394597093936}
+  - component: {fileID: 9220531267878700584}
   m_Layer: 0
   m_Name: queen
   m_TagString: Untagged
@@ -29,7 +29,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4209884871858519041}
   m_LocalRotation: {x: -0.000000081460335, y: 0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.00000023841858, y: -0.00000011920929, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 0.06, y: 0.06, z: 0.06}
   m_Children: []
   m_Father: {fileID: 0}
@@ -97,23 +97,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &-3167260562996164502
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4209884871858519041}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cf654b68cc4270b4b9f2417721da098f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxHealth: 0
-  health: 0
-  healthDepletionRate: 0
-  timestep: 0.1
-  worldScript: {fileID: 0}
 --- !u!64 &4979709394597093936
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -128,3 +111,22 @@ MeshCollider:
   m_Convex: 1
   m_CookingOptions: 14
   m_Mesh: {fileID: 4493585093827132993, guid: ec477d1a34e9c3c46a25eb920d59dae5, type: 3}
+--- !u!114 &9220531267878700584
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4209884871858519041}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d61f84e43d50af24b866d7daef90c7f4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 0
+  health: 0
+  healthDepletionRate: 0
+  timestep: 0
+  timeElapsed: 0
+  mulchValue: 30
+  worldScript: {fileID: 0}

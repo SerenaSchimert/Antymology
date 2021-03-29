@@ -1,64 +1,107 @@
 ﻿using Antymology.Terrain;
-using Antymology.Terrain;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-//using System;
 
-    public class AntManager : MonoBehaviour
+public class AntManager : MonoBehaviour
+{
+
+    #region Fields/Properties
+
+    public const float maxHealth = 100;
+    public float health = 100;
+    public float healthDepletionRate = 0.05f;
+    public const float timestep = 0.2f;
+    public float timeElapsed = 0;
+    public const float mulchValue = 30;
+
+    // FITNESS METRIC FOR SELECTING NEXT GENERATION'S PARENT PAIR
+    public float lifetimeHealthtoQueen = 0; // health given to queen over course of ant's life
+
+    // Is queen
+    public bool queen;  // Is the ant the queen?
+                        // A queen will not inherit genes, the genes will be pre-set 
+    public float queenEatPoint = 50; // don't want to dig too much
+    public int queenstepsOffAcid = 10; // queen gets far off that acid
+
+    // genes -> worker ants can evolve -> for probabilities, lower values are actually higher (size of range in random selection)
+    public float eatPoint; // health level below which ant will consume mulch when on mulch block and without trapping itself
+    public int probDig; // dig probability given not being trapped is checked already
+    public int stepsOffAcid; // number of steps off of acid
+    public float healthToQueen; // amount of queen's missing health to re-fill (i.e., full, half of what's missing etc.)
+    public int probHealthtoAnt; // probability of giving health (25% of current health) to non-queen ant if other ant's health is < 50 and this ant's health is > 50
+    public int forwardBias; // an added bias to go forward if available before random selection of movement from available moveset
+
+    // other fields
+    public bool fleeState = false; // ants fleeing acid -> lasts until number of non-backward steps off of acid -> after one backward step to turn around
+    public float stepsOff = 0; // non-backward steps taken off of acid so far
+
+    public WorldManager worldScript;
+
+    // gene variables
+
+    #endregion
+
+    #region Initialize/Update
+
+    // Start is called before the first frame update
+    void Awake()
     {
+        // Extract rigid body
+        Rigidbody rigidbody = GetComponent<Rigidbody>();
+    }
 
-        #region Fields/Properties
+    public void Initialize(WorldManager world, bool isQueen)
+    {
+        worldScript = world;
+        queen = isQueen;
 
-        public float maxHealth  = 100;
-        public float health = 100;
-        public float healthDepletionRate;
-        public float timestep = 0.1f;
-        public float timeElapsed = 0;
-
-        public WorldManager worldScript;
-
-        // gene variables
-
-        #endregion
-
-        #region Initialize/Update
-
-        // Start is called before the first frame update
-        void Awake()
-        {
-            // Extract rigid body
-            Rigidbody rigidbody = GetComponent<Rigidbody>();
+        if (queen) {
+            eatPoint = queenEatPoint;
+            stepsOffAcid = queenstepsOffAcid;
         }
 
-        public void Initialize(WorldManager world)
-        {
-            worldScript = world;
-            maxHealth = 10;
-            health = 10;
-            healthDepletionRate = 0.05f;
-        }
+    }
 
-        // Time step method from below (although fairly intuitive anyway...)
-        // https://answers.unity.com/questions/1220440/how-to-display-call-a-function-every-second.html
-        // Update is called once per frame
-     void Update()
+    public void Initialize(float eatPoint, int probDig, int stepsOffAcid, float healthToQueen, int probHealthtoAnt, int  forwardBias) { }
+
+    void Update()
         {
+            
             timeElapsed += Time.deltaTime;
             if (timeElapsed >= timestep) {
+
+                checkAcid();
                 timeElapsed = timeElapsed % timestep;
                 depleteHealth();
-
                 dig();
                 move();
             }
 
           }
 
-        #endregion Initialize/Update
+    #endregion Initialize/Update
 
     #region Methods
+
+    // Increase health drop rate *2 if standing on acid
+    void checkAcid() {
+
+        if (stepsOff == stepsOffAcid)
+        {
+            fleeState = false;
+            stepsOff = 0;
+        }
+
+        if (worldScript.GetBlock((int)transform.position.x, (int)transform.position.y - 1, (int)transform.position.z) is AcidicBlock)
+        {
+            healthDepletionRate = 0.1f;
+            fleeState = true;
+        }
+        else healthDepletionRate = 0.05f;
+
+    }
 
     // Ant dies -> already implemented in WorldManager
     // reduce ant health -> use fixed timestep, i.e. time.deltaTime
@@ -84,8 +127,6 @@ using UnityEngine;
         AbstractBlock block = worldScript.GetBlock((int) position.x, (int) position.y - 1, (int) position.z);
         if (!(block is ContainerBlock)) {
 
-            if ((block is MulchBlock) && (health < 50)) ;
-
             Vector3 forward = transform.forward;
             Vector3 back = -transform.forward;
             Vector3 right = transform.right;
@@ -93,20 +134,35 @@ using UnityEngine;
 
             float minOffset = 10;
             float offset;
+            bool tooHigh = true;
 
             offset = validateMove(forward);
             if (offset < minOffset) minOffset = offset;
+            if (offset > -3) tooHigh = false;
 
             offset = validateMove(back);
             if (offset < minOffset) minOffset = offset;
+            if (offset > -3) tooHigh = false;
 
             offset = validateMove(right);
             if (offset < minOffset) minOffset = offset;
+            if (offset > -3) tooHigh = false;
 
             offset = validateMove(left);
             if (offset < minOffset) minOffset = offset;
+            if (offset > -3) tooHigh = false;
 
-            if (minOffset < 1)
+            if ((block is MulchBlock) && (health < eatPoint) && minOffset < 2) {
+
+                // dig up and consume mulch
+                AbstractBlock airblock = new AirBlock();
+                worldScript.SetBlock((int)position.x, (int)position.y - 1, (int)position.z, airblock);
+                transform.position = new Vector3(position.x, position.y - 1, position.z);
+
+                health += mulchValue;  // replenish health
+             }
+
+            else if ((minOffset < 0 && UnityEngine.Random.Range(0, 5) == 0  && !queen && !fleeState) || tooHigh )
             {
                 AbstractBlock airblock = new AirBlock();
                 worldScript.SetBlock((int)position.x, (int)position.y - 1, (int)position.z, airblock);
@@ -129,36 +185,48 @@ using UnityEngine;
         List<Tuple<string, Vector3, float>> moveSet = new List<Tuple<string, Vector3, float>>();
 
         float offset;
+        Tuple<string, Vector3, float> next;
 
-        offset = validateMove(forward);
-            Tuple<string, Vector3, float> next = Tuple.Create("forward", forward, offset);
-        if (offset != -10 && offset != 10) moveSet.Add(next);
+        if (!fleeState || !(fleeState && stepsOff == 0))
+        {
+            offset = validateMove(forward);
+            next = Tuple.Create("forward", forward, offset);
+            if (offset != -10 && offset != 10) moveSet.Add(next);
+        }
 
-        offset = validateMove(back);
-        next = Tuple.Create("back", back, offset); 
-        if (offset != -10 && offset != 10) moveSet.Add(next);
+        if (!fleeState || (fleeState && stepsOff == 0))
+        {
+            offset = validateMove(back);
+            next = Tuple.Create("back", back, offset);
+            if (offset != -10 && offset != 10) moveSet.Add(next);
+        }
 
-        offset = validateMove(right);
-        next = Tuple.Create("right", right, offset);
-        if (offset != -10 && offset != 10) moveSet.Add(next);
+        if (!fleeState || !(fleeState && stepsOff == 0))
+        {
+            offset = validateMove(right);
+            next = Tuple.Create("right", right, offset);
+            if (offset != -10 && offset != 10) moveSet.Add(next);
+        }
 
-        offset = validateMove(left);
-        next = Tuple.Create("left", left, offset);
-        if (offset != -10 && offset != 10) moveSet.Add(next);
-
-
+        if (!fleeState || !(fleeState && stepsOff == 0))
+        {
+            offset = validateMove(left);
+            next = Tuple.Create("left", left, offset);
+            if (offset != -10 && offset != 10) moveSet.Add(next);
+        }
 
         if (moveSet.Count != 0) {
 
-            Tuple<string, Vector3, float> move = moveSet[(int) UnityEngine.Random.Range(0, moveSet.Count)];
+            Tuple<string, Vector3, float> move;
+
+            if (moveSet[0].Item1 == "forward" && UnityEngine.Random.Range(0, forwardBias) == 0) move = moveSet[0];
+            else move = moveSet[(int)UnityEngine.Random.Range(0, moveSet.Count)];
 
             float rotatey = 0;
 
             if (move.Item1 == "back") rotatey = 180;
             else if (move.Item1 == "right") rotatey = -90;
             else if (move.Item1 == "left") rotatey = 90;
-
-            print("move");
 
             transform.Rotate(0, rotatey, 0, Space.Self);
             transform.position = new Vector3(position.x + move.Item2.x, position.y + move.Item3, position.z + move.Item2.z);

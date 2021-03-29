@@ -12,13 +12,24 @@ namespace Antymology.Terrain
         #region Fields
 
         /// <summary>
+        /// Toggle between evolve ants and just running simulation
+        /// </summary>
+        public bool evolve;
+
+        /// <summary>
+        /// Queen spawn
+        /// </summary>
+        public float queenSpawnX;
+        public float queenSpawnZ;
+
+        /// <summary>
         /// The prefab containing the ant.
         /// </summary>
         public GameObject antPrefab;
         public List<AntManager> ants = new List<AntManager>();
 
         public GameObject queenPrefab;
-        public QueenManager queen;
+        public AntManager queen;
 
         /// <summary>
         /// The material used for eech block.
@@ -79,8 +90,12 @@ namespace Antymology.Terrain
         /// </summary>
         private void Start()
         {
+
             GenerateData();
             GenerateChunks();
+
+            queenSpawnX = UnityEngine.Random.Range(16*2, 16*5);
+            queenSpawnZ = UnityEngine.Random.Range(16*2, 16*5);
 
             Camera.main.transform.position = new Vector3(0 / 2, Blocks.GetLength(1), 0);
             Camera.main.transform.LookAt(new Vector3(Blocks.GetLength(0), 0, Blocks.GetLength(2)));
@@ -95,6 +110,7 @@ namespace Antymology.Terrain
 
             killDepletedAnts();
 
+            // if only half of the popultion left, get the top performers
             if (ants.Count < 50)
             {
                 //Evaluate();
@@ -122,21 +138,21 @@ namespace Antymology.Terrain
                 if (i == 0)
                 {
                     ant = GameObject.Instantiate(queenPrefab);
-                    queen = ant.GetComponent<QueenManager>();
+                    queen = ant.GetComponent<AntManager>();
+                    queen.Initialize(this, true);
+
+                    spawnX = queenSpawnX;
+                    spawnZ = queenSpawnZ;
                 }
                 else {
                     ant = GameObject.Instantiate(antPrefab);
                     AntManager antScript = ant.GetComponent<AntManager>();
-                    antScript.Initialize(this);
+                    antScript.Initialize(this, false);
                     ants.Add(antScript);
 
+                    spawnX = queenSpawnX + (int)UnityEngine.Random.Range(-16, 16);
+                    spawnZ = queenSpawnZ + (int)UnityEngine.Random.Range(-16, 16 );
                 }
-
-                //spawnX = (int) UnityEngine.Random.Range(1, 16*8);
-                //spawnZ = (int) UnityEngine.Random.Range(1, 16*8);
-
-                spawnX = 5;
-                spawnZ = 5;
 
                 spawnY = 4*6;
 
