@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 8173149984551810084}
   - component: {fileID: 2472570688363874525}
   - component: {fileID: 567371970292221959}
-  - component: {fileID: -2795201178607902398}
   - component: {fileID: -3167260562996164502}
+  - component: {fileID: 4979709394597093936}
   m_Layer: 0
   m_Name: queen
   m_TagString: Untagged
@@ -97,20 +97,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!64 &-2795201178607902398
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4209884871858519041}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Convex: 1
-  m_CookingOptions: 14
-  m_Mesh: {fileID: 4493585093827132993, guid: ec477d1a34e9c3c46a25eb920d59dae5, type: 3}
 --- !u!114 &-3167260562996164502
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -123,3 +109,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cf654b68cc4270b4b9f2417721da098f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxHealth: 0
+  health: 0
+  healthDepletionRate: 0
+  timestep: 0.1
+  worldScript: {fileID: 0}
+--- !u!64 &4979709394597093936
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4209884871858519041}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Convex: 1
+  m_CookingOptions: 14
+  m_Mesh: {fileID: 4493585093827132993, guid: ec477d1a34e9c3c46a25eb920d59dae5, type: 3}

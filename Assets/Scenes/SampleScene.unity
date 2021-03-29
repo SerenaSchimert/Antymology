@@ -359,6 +359,7 @@ MonoBehaviour:
   ants: []
   queenPrefab: {fileID: 4209884871858519041, guid: a1f0d22379912ef4fb0dcc53095c2c37,
     type: 3}
+  queen: {fileID: 0}
   blockMaterial: {fileID: 2100000, guid: 4db9d8fce1a69b74f81daf1375c9ed88, type: 2}
 --- !u!4 &964896558
 Transform:

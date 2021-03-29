@@ -94,6 +94,12 @@ namespace Antymology.Terrain
         private void Update() {
 
             killDepletedAnts();
+
+            if (ants.Count < 50)
+            {
+                //Evaluate();
+                //ReplaceAnts();
+            }
         }
 
         /// <summary>
@@ -103,12 +109,12 @@ namespace Antymology.Terrain
         {
 
             // set location
-            int spawnX;
-            int spawnZ;
+            float spawnX;
+            float spawnZ;
 
-            int spawnY;
+            float spawnY;
 
-            for (int i = 0; i <= 5; i++)
+            for (int i = 0; i < 100; i++)
             {
 
                 GameObject ant;
@@ -126,14 +132,17 @@ namespace Antymology.Terrain
 
                 }
 
-                spawnX = (int) UnityEngine.Random.Range(1, 16*4);
-                spawnZ = (int) UnityEngine.Random.Range(1, 16*4);
+                //spawnX = (int) UnityEngine.Random.Range(1, 16*8);
+                //spawnZ = (int) UnityEngine.Random.Range(1, 16*8);
 
-                spawnY = 4 * 8;
+                spawnX = 5;
+                spawnZ = 5;
 
-                for (int y = 0; y <= 4 * 8; y++) {
+                spawnY = 4*6;
 
-                    if (GetBlock(spawnX, y, spawnZ) is AirBlock)
+                for (int y = 0; y <= 4 * 6; y++) {
+
+                    if (GetBlock((int) spawnX, y, (int) spawnZ) is AirBlock)
                     {
                         spawnY = y;
                         break;
@@ -141,7 +150,7 @@ namespace Antymology.Terrain
                 }
 
                 ant.transform.position = new Vector3(spawnX, spawnY, spawnZ);
-                
+
             }
 
         }
