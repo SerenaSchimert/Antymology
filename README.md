@@ -6,12 +6,12 @@ The nest and other world materials are represented as differently colored blocks
 Camera controls are WASD and middle mouse button to move (fly camera wasn't changed).
 
 # Genes
-float eatPoint; // health level below which ant will consume mulch when on mulch block and without trapping itself
-float probDig; // dig probability having already checked that digging wouldn't trap ant (walls low enough)
-float stepsOffAcid; // number of steps off of acid once acid is encountered-> i.e. how far from acid to escape
-float healthToQueen; // amount of queen's missing health to re-fill (i.e., full, half of what's missing etc.)
-float probHealthtoAnt; // probability of giving health (always 25% of current health) to non-queen ant if other ant's health is < 50 and this ant's health is > 50
-float forwardBias; // relative bias to go forward if move is available instead of random selection of movements from available movesets
+- float eatPoint; // health level below which ant will consume mulch when on mulch block and without trapping itself <br />
+- float probDig; // dig probability having already checked that digging wouldn't trap ant (walls low enough) <br />
+- float stepsOffAcid; // number of steps off of acid once acid is encountered-> i.e. how far from acid to escape <br />
+- float healthToQueen; // amount of queen's missing health to re-fill (i.e., full, half of what's missing etc.) <br />
+- float probHealthtoAnt; // probability of giving health (always 25% of current health) to non-queen ant if other ant's health is < 50 and this ant's health is > 50 <br />
+- float forwardBias; // relative bias to go forward if move is available instead of random selection of movements from available movesets <br />
 
 # Inheritance
 Measure of fitness: health given to the queen ant over the lifespan of this worker ant. This metric supports the queen in producing nest blocks, and ant must have survived half its generation dieing before being counted in the selection for fitness process.
