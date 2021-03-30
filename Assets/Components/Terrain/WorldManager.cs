@@ -10,11 +10,17 @@ namespace Antymology.Terrain
     {
 
         #region Fields
+        
+        // first generation of ants
+        private bool firstGen = true;
+
+        // parent genes to be used to create next generation
+        private Tuple<List<float>, List<float>> parentGenes;
 
         /// <summary>
         /// Toggle between evolve ants and just running simulation
         /// </summary>
-        public bool evolve;
+        private bool evolve;
 
         /// <summary>
         /// Queen spawn
@@ -108,15 +114,23 @@ namespace Antymology.Terrain
         /// </summary>
         private void Update() {
 
-            killDepletedAnts();
+            KillAnts(true);
 
-            // if only half of the popultion left, get the top performers
-            if (ants.Count < 50)
+            // if only half of the popultion is left and evolution is on, get the top performers and create new generation
+            if (evolve && ants.Count < 50)
             {
-                //Evaluate();
-                //ReplaceAnts();
+                // clear previous parent genes first
+                parentGenes.Item1.Clear();
+                parentGenes.Item2.Clear();
+                EvaluateAntFitness();
+                KillAnts(false);
+                GenerateAnts();
             }
         }
+
+        #endregion
+
+        #region AntStuff
 
         /// <summary>
         /// TO BE IMPLEMENTED BY YOU
@@ -148,6 +162,9 @@ namespace Antymology.Terrain
                     ant = GameObject.Instantiate(antPrefab);
                     AntManager antScript = ant.GetComponent<AntManager>();
                     antScript.Initialize(this, false);
+                    List<float> genes = MakeRecombinant(); // make a recombinant of parent genes
+                    genes = AddMutations(genes); // randomly mutate a few genes
+                    antScript.InitializeWorker(genes[0], genes[1], genes[2], genes[3], genes[4], genes[5]);
                     ants.Add(antScript);
 
                     spawnX = queenSpawnX + (int)UnityEngine.Random.Range(-16, 16);
@@ -171,14 +188,109 @@ namespace Antymology.Terrain
 
         }
 
-        private void killDepletedAnts()
+        private void EvaluateAntFitness() {
+
+            int p1 = 0;
+            int p2 = 0;
+
+            for (int i = 0; i <= ants.Count; i++) {
+
+                if (ants[i].lifetimeHealthtoQueen > ants[p1].lifetimeHealthtoQueen)
+                {
+                    p2 = p1;
+                    p1 = i;
+                }
+                else if (ants[i].lifetimeHealthtoQueen > ants[p2].lifetimeHealthtoQueen) p2 = i;
+            }
+
+
+            // Get genes eatPoint, probDig, stepsOffAcid, healthToQueen, probHealthtoAnt, forwardBias
+            parentGenes.Item1.Add(ants[p1].eatPoint);
+            parentGenes.Item2.Add(ants[p2].eatPoint);
+
+            parentGenes.Item1.Add(ants[p1].probDig);
+            parentGenes.Item2.Add(ants[p2].probDig);
+
+            parentGenes.Item1.Add(ants[p1].stepsOffAcid);
+            parentGenes.Item2.Add(ants[p2].stepsOffAcid);
+
+            parentGenes.Item1.Add(ants[p1].healthToQueen);
+            parentGenes.Item2.Add(ants[p2].healthToQueen);
+
+            parentGenes.Item1.Add(ants[p1].probHealthtoAnt);
+            parentGenes.Item2.Add(ants[p2].probHealthtoAnt);
+
+            parentGenes.Item1.Add(ants[p1].forwardBias);
+            parentGenes.Item2.Add(ants[p2].forwardBias);
+
+        }
+
+        private List<float> MakeRecombinant() {
+
+            List<float> genes = new List<float>();
+
+            for (int i = 0; i <= parentGenes.Item1.Count; i++) {
+
+                // for each trait, take randomly from either parent 1 or parent 2
+                if (UnityEngine.Random.Range(0, 2) == 1) genes.Add(parentGenes.Item1[i]);
+                else genes.Add(parentGenes.Item2[i]);
+            }
+
+            return genes;
+        }
+
+        private List<float> AddMutations(List<float> genes) {
+
+            int numMutations = UnityEngine.Random.Range(0, 3);
+
+            List<bool> mutated = new List<bool>(); 
+            for(int i = 0; i < genes.Count; i++) mutated.Add(false);
+
+            while (numMutations != 0) {
+
+                int index = UnityEngine.Random.Range(0, genes.Count);
+                while (mutated[index]) index = UnityEngine.Random.Range(0, genes.Count);
+
+                ReturnRandomized(index);
+
+                numMutations--;
+            }
+
+            return genes;
+        }
+
+        private float ReturnRandomized(int index) {
+
+            //eatPoint
+            if (index == 0) return UnityEngine.Random.Range(20, 100);
+            
+            //probDig
+            else if (index == 1) return UnityEngine.Random.Range(1, 10);
+
+            //stepsOffAcid
+            else if (index == 2) return UnityEngine.Random.Range(1, 10);
+
+            //healthToQueen 
+            else if (index == 3) return ((float) UnityEngine.Random.Range(25, 100)) / 100.0f;
+
+            //probHealthtoAnt
+            else if (index == 4) return UnityEngine.Random.Range(1, 10);
+
+            //forwardBias
+            else if (index == 5) return UnityEngine.Random.Range(1, 10);
+
+            return 0;
+
+        }
+
+        private void KillAnts(bool depletedOnly)
         {
 
             foreach (AntManager ant in ants) {
 
                 if (ant != null)
                 {
-                    if (ant.health <= 0) Destroy(ant.gameObject);
+                    if ((depletedOnly && ant.health <= 0) || !depletedOnly) Destroy(ant.gameObject);
                 }
             }
 
@@ -200,13 +312,13 @@ namespace Antymology.Terrain
 
             if (queen != null)
             {
-                if (queen.health <= 0) Destroy(queen.gameObject);
+                if ((depletedOnly && queen.health <= 0) || !depletedOnly) Destroy(queen.gameObject);
             }
         }
 
         #endregion
 
-        #region Methods
+        #region WorldMethods
 
         /// <summary>
         /// Retrieves an abstract block type at the desired world coordinates.

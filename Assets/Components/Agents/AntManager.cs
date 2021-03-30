@@ -21,17 +21,17 @@ public class AntManager : MonoBehaviour
 
     // Is queen
     public bool queen;  // Is the ant the queen?
-                        // A queen will not inherit genes, the genes will be pre-set 
-    public float queenEatPoint = 50; // don't want to dig too much
+    // The queen will not inherit genes, the genes will be pre-set 
+    public float queenEatPoint = 5; // don't want to dig too much
     public int queenstepsOffAcid = 10; // queen gets far off that acid
 
     // genes -> worker ants can evolve -> for probabilities, lower values are actually higher (size of range in random selection)
     public float eatPoint; // health level below which ant will consume mulch when on mulch block and without trapping itself
-    public int probDig; // dig probability given not being trapped is checked already
-    public int stepsOffAcid; // number of steps off of acid
+    public float probDig; // dig probability given not being trapped is checked already
+    public float stepsOffAcid; // number of steps off of acid
     public float healthToQueen; // amount of queen's missing health to re-fill (i.e., full, half of what's missing etc.)
-    public int probHealthtoAnt; // probability of giving health (25% of current health) to non-queen ant if other ant's health is < 50 and this ant's health is > 50
-    public int forwardBias; // an added bias to go forward if available before random selection of movement from available moveset
+    public float probHealthtoAnt; // probability of giving health (25% of current health) to non-queen ant if other ant's health is < 50 and this ant's health is > 50
+    public float forwardBias; // an added bias to go forward if available before random selection of movement from available moveset
 
     // other fields
     public bool fleeState = false; // ants fleeing acid -> lasts until number of non-backward steps off of acid -> after one backward step to turn around
@@ -64,7 +64,15 @@ public class AntManager : MonoBehaviour
 
     }
 
-    public void Initialize(float eatPoint, int probDig, int stepsOffAcid, float healthToQueen, int probHealthtoAnt, int  forwardBias) { }
+    public void InitializeWorker(float eatPoint, float probDig, float stepsOffAcid, float healthToQueen, float probHealthtoAnt, float forwardBias) {
+
+        this.eatPoint = eatPoint;
+        this.probDig = probDig;
+        this.stepsOffAcid = stepsOffAcid;
+        this.healthToQueen = healthToQueen;
+        this.probHealthtoAnt = probHealthtoAnt;
+        this.forwardBias = forwardBias;
+    }
 
     void Update()
         {
@@ -250,14 +258,53 @@ public class AntManager : MonoBehaviour
         return 10;
     }
 
-    // Queen ant -> produces nest blocks -> separate script? -> probably, yes. So tags can be used...
     // Producing nest block consumes 1/3 of queen's max health
-    // Probably want health exchanges to mostly be with queen...
+
+    // health exchanges
+    void OnCollisionEnter(Collision other) {
+
+        if (!queen && !other.gameObject.GetComponent<AntManager>().queen)
+        {
+
+            if (other.gameObject.GetComponent<AntManager>().health < 50 && health > 50)
+            {
+
+                if (UnityEngine.Random.Range(0, probHealthtoAnt) == 0)
+                {
+                    health -= 25;
+                    other.gameObject.GetComponent<AntManager>().health += 25;
+                }
+            }
+            else if (other.gameObject.GetComponent<AntManager>().health > 50 && health < 50)
+            {
+
+                if (UnityEngine.Random.Range(0, other.gameObject.GetComponent<AntManager>().probHealthtoAnt) == 0)
+                {
+                    health += 25;
+                    other.gameObject.GetComponent<AntManager>().health -= 25;
+                }
+            }
+
+        }
+        else if (queen)
+        {
+            float healthExchange = other.gameObject.GetComponent<AntManager>().healthToQueen * (maxHealth - health);
+            health += healthExchange;
+            other.gameObject.GetComponent<AntManager>().health -= healthExchange;
+        }
+        else if (other.gameObject.GetComponent<AntManager>().queen) {
+
+            float healthExchange = healthToQueen * (maxHealth - other.gameObject.GetComponent<AntManager>().health);
+            health -= healthExchange;
+            other.gameObject.GetComponent<AntManager>().health += healthExchange;
+
+        }
+    }
 
     // Can create new ants every generation but not increase the current generation at all (the 'evaluation' phase?)
 
     #endregion Methods
-    }
+}
 
 
 
