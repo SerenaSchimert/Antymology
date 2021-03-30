@@ -3,6 +3,8 @@
 A simulation of an ant colony formed through evolving generations (inheritance) with the goal of building the biggest nest.
 The nest and other world materials are represented as differently colored blocks (red for nest, grey for stone, dark green for glass, light green for mulch, purple for acid, black for container, transparent for air)
 
+Ants have depleting health that can be replenished by digging up and consuming mulch, and can only move to a block beside them (up, down, left, right) and within -2 to 2 blocks up or down. Only the single queen ant in each generation can place down nest blocks.
+
 Camera controls are WASD and middle mouse button to move (fly camera wasn't changed).
 
 # Genes
