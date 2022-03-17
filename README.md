@@ -1,5 +1,8 @@
 # Assignment 3: Antymology
 
+Forked base code from: https://github.com/DaviesCooper/Antymology
+- Aspects of the environment/terrain are from this initial code base, agent behaviour/genetics etc. is original code
+
 A simulation of an ant colony formed through evolving generations (inheritance) with the goal of building the biggest nest.
 The nest and other world materials are represented as differently colored blocks (red for nest, grey for stone, dark green for glass, light green for mulch, purple for acid, black for container, transparent for air)
 
