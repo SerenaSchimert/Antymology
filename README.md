@@ -1,3 +1,5 @@
+# Note: currently in a buggy state, needs updating before I'd reccommend trying out code
+
 # Assignment 3: Antymology
 
 Forked base code from: https://github.com/DaviesCooper/Antymology
