@@ -1,4 +1,4 @@
-# Note: currently in a buggy state, needs updating before I'd reccommend trying out code
+# Note: currently in a buggy state, needs updating before I'd recommend trying out code
 
 # Assignment 3: Antymology
 
