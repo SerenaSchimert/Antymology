@@ -14,7 +14,7 @@ The nest and other world materials are represented as differently colored blocks
 
 Ants have depleting health that can be replenished by digging up and consuming mulch, and can only move to a block beside them (up, down, left, right) and within -2 to 2 blocks up or down. Only the single queen ant in each generation can place down nest blocks.
 
-Camera controls are WASD and middle mouse button to move (fly camera wasn't changed).
+Camera controls are WASD and middle mouse button to move (fly camera from original base code).
 
 # Genes
 - float eatPoint; // health level below which ant will consume mulch when on mulch block and without trapping itself <br />
