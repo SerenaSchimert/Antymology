@@ -2,6 +2,8 @@
 
 # Assignment 3: Antymology
 
+Made in Unity (Version: 2019.2.8f1)
+
 Forked base code from: https://github.com/DaviesCooper/Antymology
 - Aspects of the environment/terrain are from this initial code base, but agent behaviour/genetics etc. is original code
 
