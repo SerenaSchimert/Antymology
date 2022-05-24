@@ -3,7 +3,7 @@
 Made in Unity (Version: 2019.2.8f1)
 
 Forked base code from: https://github.com/DaviesCooper/Antymology
-- Aspects of the environment/terrain are from this initial code base, but agent behaviour/genetics etc. is original code
+- Environment/terrain are from this initial code base, but agent behaviour/genetics etc. is original code
 
 ![NestBuilding](https://github.com/SerenaSchimert/Antymology/blob/master/Images/NestBuilding.PNG)
 
