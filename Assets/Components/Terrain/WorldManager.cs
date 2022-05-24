@@ -12,9 +12,17 @@ namespace Antymology.Terrain
 
         #region Fields
 
+        // Current generation
+        public UnityEngine.UI.Text gen;
+        public int numGen = 0;
+
         // Number of nest blocks to display
         public UnityEngine.UI.Text value;
         public int numNestBlocks = 0;
+
+        // Number of nest blocks to display
+        public UnityEngine.UI.Text totValue;
+        public int totNumNestBlocks = 0;
 
         // first generation of ants
         private bool firstGen = true;
@@ -23,9 +31,9 @@ namespace Antymology.Terrain
         private Tuple<List<float>, List<float>> parentGenes;
 
         /// <summary>
-        /// Toggle between evolving ants and just running simulation - note: at the moment toggling to true might break things, so keep off
+        /// Toggle between evolving ants and just running simulation
         /// </summary>
-        private bool evolve = false;
+        private bool evolve = true;
 
         /// <summary>
         /// Queen 
@@ -131,11 +139,8 @@ namespace Antymology.Terrain
             }
             else
             {
-                // Non-evolving ants are immortal ants... the queen still won't build nest blocks on low health though
-                if(evolve) KillAnts(true);  // the 'true' here refers to 'depetedOnly' i.e. only those ants at 0 health
-
                 // if only half of the popultion is left and evolution is on, get the top performers and create new generation
-                if (ants.Count < 25)
+                if (ants.Count < 50)
                 {
 
                     parentGenes.Item1.Clear();
@@ -144,10 +149,16 @@ namespace Antymology.Terrain
                     EvaluateAntFitness();
                     KillAnts(false);
                     GenerateAnts();
+
+                }
+                else {
+                    // Non-evolving ants are immortal ants... the queen still won't build nest blocks on low health though
+                    if (evolve) KillAnts(true);  // the 'true' here refers to 'depetedOnly' i.e. only those ants at 0 health
                 }
             }
 
             value.text = numNestBlocks.ToString();
+            totValue.text = totNumNestBlocks.ToString();
         }
 
         #endregion
@@ -189,7 +200,7 @@ namespace Antymology.Terrain
                     List<float> genes = new List<float>();
                     if (firstGen)
                     {
-                        print("first gene set");
+                        print("first genes set");
                         // If first generation, randomly generate genes
                         genes.Add(ReturnRandomized(0));
                         genes.Add(ReturnRandomized(1));
@@ -230,11 +241,13 @@ namespace Antymology.Terrain
 
                 ants[i].setPosition(pos);
 
-                print(ants.Count);
-
             }
 
             firstGen = false; // next generation won't be considered first
+
+            numGen++;
+            gen.text = numGen.ToString();
+            numNestBlocks = 0;    // reset
 
         }
 
@@ -348,7 +361,7 @@ namespace Antymology.Terrain
 
                 if (ant != null)
                 {
-                    if ((depletedOnly && ant.health <= 0) || !depletedOnly) Destroy(ant.gameObject);
+                    if (ant.health <= 0 || !depletedOnly) Destroy(ant.gameObject);
                 }
             }
 
@@ -370,7 +383,7 @@ namespace Antymology.Terrain
 
             if (queen != null)
             {
-                if ((depletedOnly && queen.health <= 0) || !depletedOnly) Destroy(queen.gameObject);
+                if (queen.health <= 0 || !depletedOnly) Destroy(queen.gameObject);
             }
         }
 
@@ -678,8 +691,10 @@ namespace Antymology.Terrain
 
             if (updateZ - 1 >= 0)
                 Chunks[updateX, updateY, updateZ - 1].updateNeeded = true;
-            if (updateX + 1 < Chunks.GetLength(2))
-                Chunks[updateX, updateY, updateZ + 1].updateNeeded = true;
+            //if (updateX + 1 < Chunks.GetLength(2))
+            //Chunks[updateX, updateY, updateZ + 1].updateNeeded = true;
+            if (updateZ + 1 < Chunks.GetLength(2))
+               Chunks[updateX, updateY, updateZ + 1].updateNeeded = true;
         }
 
         #endregion

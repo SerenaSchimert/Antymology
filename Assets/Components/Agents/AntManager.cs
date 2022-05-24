@@ -9,17 +9,13 @@ public class AntManager : MonoBehaviour
 
     #region Fields/Properties
 
-    public UnityEngine.UI.Text value;
-
-    public int numNestBlocks = 0;
-
     // Metrics leading to ant death, health depletes by a steady rate overtime, moreso if on an acid block
-    public const float maxHealth = 100;
-    public float health = 100;
-    public float healthDepletionRate = 0.05f;
-    public const float timestep = 0.2f;
-    public float timeElapsed = 0;
-    public const float mulchValue = 30;
+    public float maxHealth;
+    public float health;
+    public float healthDepletionRate;
+    public float timestep;
+    public float timeElapsed;
+    public float mulchValue;
 
     // FITNESS METRIC FOR SELECTING NEXT GENERATION'S PARENT PAIR
     public float lifetimeHealthtoQueen = 0; // health given to queen over course of ant's life
@@ -66,6 +62,13 @@ public class AntManager : MonoBehaviour
             stepsOffAcid = queenstepsOffAcid;
         }
 
+            maxHealth = 100.0f;
+            health = 100.0f;
+            healthDepletionRate = 2.0f;
+            timestep = 0.2f;
+            timeElapsed = 0.0f;
+            mulchValue = 30.0f;
+
     }
 
     // Called from WorldManager where input genes were calculated
@@ -77,6 +80,7 @@ public class AntManager : MonoBehaviour
         this.healthToQueen = healthToQueen;
         this.probHealthtoAnt = probHealthtoAnt;
         this.forwardBias = forwardBias;
+
     }
 
     public void setPosition(Vector3 pos) {
@@ -97,9 +101,9 @@ public class AntManager : MonoBehaviour
             if (queen && health >= maxHealth / 2) buildNest();
             else {
                 dig();
+            }
                 move();
-            }
-            }
+        }
 
           }
 
@@ -110,20 +114,32 @@ public class AntManager : MonoBehaviour
     // Increase health drop rate *2 if standing on acid
     void checkAcid() {
 
-        // Check whether ant has fleed to the amount specified in their genes
-        if (stepsOff == stepsOffAcid)
-        {
-            fleeState = false;
-            stepsOff = 0;
-        }
-
+        // If already fleeing ommit first step back, otherwise a back and forth trap can occur where the ant dies on acid trying to escape on multiple sides
         if (worldScript.GetBlock((int)transform.position.x, (int)transform.position.y - 1, (int)transform.position.z) is AcidicBlock)
         {
-            healthDepletionRate = 0.1f;
-            fleeState = true;
-            stepsOff = 0;
+            if (!fleeState)
+            {
+                healthDepletionRate = healthDepletionRate*2;
+                fleeState = true;
+                stepsOff = 0;
+            }
+            else stepsOff = 1;
         }
-        else healthDepletionRate = 0.05f;
+        else
+        {
+            if (fleeState)
+            {
+                healthDepletionRate = healthDepletionRate/2 ;
+
+                // Check whether ant has fleed to the amount specified in their genes
+                if (stepsOff >= stepsOffAcid)
+                {
+                    fleeState = false;
+                    stepsOff = 0;
+                }
+
+            }
+        }
 
     }
 
@@ -158,7 +174,7 @@ public class AntManager : MonoBehaviour
 
             float minOffset = 10;
             float offset;
-            bool tooHigh = true;
+            bool tooHigh = true;    // Ant is trapped, digging may be the only way to escape
 
             offset = validateMove(forward);
             if (offset < minOffset) minOffset = offset;
@@ -238,7 +254,7 @@ public class AntManager : MonoBehaviour
             Tuple<string, Vector3, float> move;
 
             // In fleestate any valid move back is taken, otherwise there may be a forward bias
-            if (moveSet[0].Item1 == "forward" && UnityEngine.Random.Range(0, forwardBias) == 0 || (fleeState && stepsOff == 0)) move = moveSet[0];
+            if ((moveSet[0].Item1 == "forward" && UnityEngine.Random.Range(0, forwardBias) == 0 && !queen) || (fleeState && stepsOff == 0)) move = moveSet[0];
             else move = moveSet[(int)UnityEngine.Random.Range(0, moveSet.Count)];
 
             float rotatey = 0;
@@ -276,11 +292,11 @@ public class AntManager : MonoBehaviour
 
         AbstractBlock nestBlock = new NestBlock();
         Vector3 oldPos = transform.position;
-        move();
         worldScript.SetBlock((int)oldPos.x, (int)oldPos.y, (int)oldPos.z, nestBlock);
+        transform.position = new Vector3(oldPos.x, oldPos.y + 1, oldPos.z);
         health -= 0.33f * maxHealth;
         worldScript.numNestBlocks++;
-
+        worldScript.totNumNestBlocks++;
     }
 
     // health exchanges
@@ -332,7 +348,6 @@ public class AntManager : MonoBehaviour
         }
     }
 
-    // Can create new ants every generation but not increase the current generation at all (the 'evaluation' phase?)
 
     #endregion Methods
 }
