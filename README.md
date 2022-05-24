@@ -1,16 +1,14 @@
-# Note: currently in a buggy state, needs updating before I'd recommend trying out code
-
 # Assignment 3: Antymology
 
 Made in Unity (Version: 2019.2.8f1)
 
 Forked base code from: https://github.com/DaviesCooper/Antymology
-- Aspects of the environment/terrain are from this initial code base, but agent behaviour/genetics etc. is original code
+- Environment/terrain is from this initial code base, but agent behaviour/genetics etc. is original code
 
-[A simulation of an ant colony formed through evolving generations (inheritance) with the goal of building the biggest nest.](https://raw.githubusercontent.com/DaviesCooper/Antymology/master/Images/Ants.gif)
+![NestBuilding](https://github.com/SerenaSchimert/Antymology/blob/master/Images/NestBuilding.PNG)
 
 A simulation of an ant colony formed through evolving generations (inheritance) with the goal of building the biggest nest.
-The nest and other world materials are represented as differently colored blocks (red for nest, grey for stone, dark green for glass, light green for mulch, purple for acid, black for container, transparent for air)
+The nest and other world materials are represented as differently colored blocks (red for nest, grey for stone, dark green for glass, light green for mulch, purple for acid, black for container, transparent for air). Queen ant is gold, regular ants are black.
 
 Ants have depleting health that can be replenished by digging up and consuming mulch, and can only move to a block beside them (up, down, left, right) and within -2 to 2 blocks up or down. Only the single queen ant in each generation can place down nest blocks.
 
