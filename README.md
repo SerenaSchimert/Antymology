@@ -33,4 +33,4 @@ The two ants with the highest fitness are used as the parents in creating the ge
       - assign this gene set to a new ant
 
 # Notes
-Bugs are still present and genes are lacking somewhat in ability to increase encounters with the queen ant. Ants are also not trained (evolve is set to on in WorldManager, if you would like to set genes, turn this to false, than find where evolvedGenes are set and manually add a value, right  now those values are not set meaningfully again due to lack of ant training). The foundation, methods etc. are all there (note that all evolution/inheritance related methods are within WorldManager script), but the current execution needs work.
+Evolution could be better, but as of now the future generations are at a disadvantae as mulch isn't repleted between generations.
