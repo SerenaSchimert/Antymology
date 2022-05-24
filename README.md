@@ -1,5 +1,3 @@
-# Note: currently in a buggy state, needs updating before I'd recommend trying out code
-
 # Assignment 3: Antymology
 
 Made in Unity (Version: 2019.2.8f1)
