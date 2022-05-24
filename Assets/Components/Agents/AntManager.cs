@@ -9,6 +9,11 @@ public class AntManager : MonoBehaviour
 
     #region Fields/Properties
 
+    public UnityEngine.UI.Text value;
+
+    public int numNestBlocks = 0;
+
+    // Metrics leading to ant death, health depletes by a steady rate overtime, moreso if on an acid block
     public const float maxHealth = 100;
     public float health = 100;
     public float healthDepletionRate = 0.05f;
@@ -23,7 +28,7 @@ public class AntManager : MonoBehaviour
     public bool queen;  // Is the ant the queen?
     // The queen will not inherit genes, the genes will be pre-set 
     public float queenEatPoint = 5; // don't want to dig too much
-    public int queenstepsOffAcid = 10; // queen gets far off that acid
+    public int queenstepsOffAcid = 10; // queen gets far off that acid - high self preservation -? well, exept for the not eating bit...
 
     // genes -> worker ants can evolve -> for probabilities, lower values are actually higher (size of range in random selection)
     public float eatPoint; // health level below which ant will consume mulch when on mulch block and without trapping itself
@@ -34,8 +39,8 @@ public class AntManager : MonoBehaviour
     public float forwardBias; // an added bias to go forward if available before random selection of movement from available moveset
 
     // other fields
-    public bool fleeState = false; // ants fleeing acid -> lasts until number of non-backward steps off of acid -> after one backward step to turn around
-    public float stepsOff = 0; // non-backward steps taken off of acid so far
+    public bool fleeState = false; // ants fleeing acid -> lasts until number steps off of acid -> one backward step to turn around + more non-backward steps
+    public float stepsOff = 0; // steps taken to leave of acid so far
 
     public WorldManager worldScript;
 
@@ -45,7 +50,6 @@ public class AntManager : MonoBehaviour
 
     #region Initialize/Update
 
-    // Start is called before the first frame update
     void Awake()
     {
         // Extract rigid body
@@ -64,6 +68,7 @@ public class AntManager : MonoBehaviour
 
     }
 
+    // Called from WorldManager where input genes were calculated
     public void InitializeWorker(float eatPoint, float probDig, float stepsOffAcid, float healthToQueen, float probHealthtoAnt, float forwardBias) {
 
         this.eatPoint = eatPoint;
@@ -74,6 +79,11 @@ public class AntManager : MonoBehaviour
         this.forwardBias = forwardBias;
     }
 
+    public void setPosition(Vector3 pos) {
+
+        transform.position = pos;
+    }
+
     void Update()
         {
             
@@ -81,10 +91,14 @@ public class AntManager : MonoBehaviour
             if (timeElapsed >= timestep) {
 
                 checkAcid();
-                timeElapsed = timeElapsed % timestep;
+                //timeElapsed = timeElapsed % timestep;
+                timeElapsed = 0;
                 depleteHealth();
+            if (queen && health >= maxHealth / 2) buildNest();
+            else {
                 dig();
                 move();
+            }
             }
 
           }
@@ -96,6 +110,7 @@ public class AntManager : MonoBehaviour
     // Increase health drop rate *2 if standing on acid
     void checkAcid() {
 
+        // Check whether ant has fleed to the amount specified in their genes
         if (stepsOff == stepsOffAcid)
         {
             fleeState = false;
@@ -106,13 +121,14 @@ public class AntManager : MonoBehaviour
         {
             healthDepletionRate = 0.1f;
             fleeState = true;
+            stepsOff = 0;
         }
         else healthDepletionRate = 0.05f;
 
     }
 
-    // Ant dies -> already implemented in WorldManager
     // reduce ant health -> use fixed timestep, i.e. time.deltaTime
+    // Eventually ant dies -> this is already checked/handled in WorldManager
     void depleteHealth() {
         health -= healthDepletionRate;
     }
@@ -125,7 +141,7 @@ public class AntManager : MonoBehaviour
     }
     */
 
-    // Ants action 'dig' -> if on top of block and block is not container block, 'dig' up block (fall to block below??), and remove block from the map
+    // Ants action 'dig' -> if on top of block and block is not container block, 'dig' up block (fall to block below...), and remove block from the map
     // Ants standing on AcidBlock have health decrease rate multiplied by 2
     // If ant ontop of mulch block -> consume mulch block and remove from world -> maybe to in world manager instead?
     // Make sure that only one of the ants on the block can consume it-> definitely sounds like maybe should be in world manager...
@@ -170,7 +186,7 @@ public class AntManager : MonoBehaviour
                 health += mulchValue;  // replenish health
              }
 
-            else if ((minOffset < 0 && UnityEngine.Random.Range(0, 5) == 0  && !queen && !fleeState) || tooHigh )
+            else if ((minOffset < 0 && UnityEngine.Random.Range(1, probDig) == 1  && !queen && !fleeState) || tooHigh )
             {
                 AbstractBlock airblock = new AirBlock();
                 worldScript.SetBlock((int)position.x, (int)position.y - 1, (int)position.z, airblock);
@@ -180,7 +196,7 @@ public class AntManager : MonoBehaviour
 
     }
 
-    // Ant action 'move' -> random direction (up/down/right/left) for now, but can only move to a block that is within 2 units of height difference
+    // Ant action 'move' -> random direction (up/down/right/left) for now (might be fun to add extra components to genes for this), but can only move to a block that is within 2 units of height difference
     void move() {
 
         Vector3 forward = transform.forward;
@@ -195,39 +211,34 @@ public class AntManager : MonoBehaviour
         float offset;
         Tuple<string, Vector3, float> next;
 
-        if (!fleeState || !(fleeState && stepsOff == 0))
+        if (!(fleeState && stepsOff == 0))
         {
             offset = validateMove(forward);
             next = Tuple.Create("forward", forward, offset);
             if (offset != -10 && offset != 10) moveSet.Add(next);
         }
 
-        if (!fleeState || (fleeState && stepsOff == 0))
+        if (!(fleeState && stepsOff >= 1))
         {
             offset = validateMove(back);
             next = Tuple.Create("back", back, offset);
             if (offset != -10 && offset != 10) moveSet.Add(next);
         }
 
-        if (!fleeState || !(fleeState && stepsOff == 0))
-        {
-            offset = validateMove(right);
-            next = Tuple.Create("right", right, offset);
-            if (offset != -10 && offset != 10) moveSet.Add(next);
-        }
+        offset = validateMove(right);
+        next = Tuple.Create("right", right, offset);
+        if (offset != -10 && offset != 10) moveSet.Add(next);
 
-        if (!fleeState || !(fleeState && stepsOff == 0))
-        {
-            offset = validateMove(left);
-            next = Tuple.Create("left", left, offset);
-            if (offset != -10 && offset != 10) moveSet.Add(next);
-        }
+        offset = validateMove(left);
+        next = Tuple.Create("left", left, offset);
+        if (offset != -10 && offset != 10) moveSet.Add(next);
 
         if (moveSet.Count != 0) {
 
             Tuple<string, Vector3, float> move;
 
-            if (moveSet[0].Item1 == "forward" && UnityEngine.Random.Range(0, forwardBias) == 0) move = moveSet[0];
+            // In fleestate any valid move back is taken, otherwise there may be a forward bias
+            if (moveSet[0].Item1 == "forward" && UnityEngine.Random.Range(0, forwardBias) == 0 || (fleeState && stepsOff == 0)) move = moveSet[0];
             else move = moveSet[(int)UnityEngine.Random.Range(0, moveSet.Count)];
 
             float rotatey = 0;
@@ -238,6 +249,8 @@ public class AntManager : MonoBehaviour
 
             transform.Rotate(0, rotatey, 0, Space.Self);
             transform.position = new Vector3(position.x + move.Item2.x, position.y + move.Item3, position.z + move.Item2.z);
+
+            if (fleeState) stepsOff++;
         }
 
     }
@@ -259,9 +272,27 @@ public class AntManager : MonoBehaviour
     }
 
     // Producing nest block consumes 1/3 of queen's max health
+    void buildNest() {
+
+        AbstractBlock nestBlock = new NestBlock();
+        Vector3 oldPos = transform.position;
+        move();
+        worldScript.SetBlock((int)oldPos.x, (int)oldPos.y, (int)oldPos.z, nestBlock);
+        health -= 0.33f * maxHealth;
+        worldScript.numNestBlocks++;
+
+    }
 
     // health exchanges
     void OnCollisionEnter(Collision other) {
+
+        try
+        {
+            print(other.gameObject.GetComponent<AntManager>().queen);
+        }
+        catch(Exception e) {
+            return;
+        }
 
         if (!queen && !other.gameObject.GetComponent<AntManager>().queen)
         {
