@@ -33,4 +33,4 @@ The two ants with the highest fitness are used as the parents in creating the ge
       - assign this gene set to a new ant
 
 # Notes
-Evolution could be better, but as of now the future generations are at a disadvantae as mulch isn't repleted between generations.
+Evolution could be better, but as of now the future generations are at a disadvantage as mulch isn't repleted between generations.
